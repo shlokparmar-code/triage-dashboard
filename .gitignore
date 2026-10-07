@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+.pytest_cache/
+data/.fernet_key
+.fernet_key

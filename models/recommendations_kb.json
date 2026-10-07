@@ -1,0 +1,88 @@
+{
+  "emergency_high": {
+    "alert_title": "EMERGENCY CARE REQUIRED IMMEDIATELY",
+    "primary_action": "Consult a doctor or proceed to the nearest emergency room immediately.",
+    "emergency_numbers": {
+      "India": "112 (National Emergency) / 108 (Ambulance)",
+      "US": "911",
+      "UK": "999",
+      "Universal": "112"
+    },
+    "while_waiting_steps": [
+      "Keep patient resting in a comfortable position (semi-upright if breathing difficulty, lying flat if faint).",
+      "Loosen tight collar, belt, or restrictive clothing around the neck and chest.",
+      "Do NOT administer solid foods or excessive water if consciousness is reduced or choking risk exists.",
+      "Ensure front entrance is unlocked and clearly visible for incoming emergency responders.",
+      "Keep patient's medication list, recent vitals, and identity card ready for paramedics."
+    ]
+  },
+  "yoga_asanas": [
+    {
+      "name": "Anulom Vilom (Alternate Nostril Breathing)",
+      "target_conditions": ["high_bp", "stress", "cardiac_risk", "anxiety"],
+      "how_to": "Sit comfortably with spine erect. Close right nostril with thumb, inhale deeply through left nostril for 4 seconds. Close left nostril with ring finger, release right nostril, and exhale smoothly for 6 seconds. Repeat for 5-10 minutes.",
+      "benefit": "Helps modulate autonomic nervous tone, reduces sympathetic hyperactivity, and supports blood pressure stabilization."
+    },
+    {
+      "name": "Mandukasana (Frog Pose)",
+      "target_conditions": ["high_glucose", "diabetes_risk", "metabolic"],
+      "how_to": "Sit in Vajrasana. Make fists with thumbs tucked inside, place them against abdomen beside the navel. Inhale deeply, then exhale and bend forward touching chest to thighs while looking forward. Hold for 30-45 seconds with normal breathing.",
+      "benefit": "Gently stimulates the abdominal organs and pancreatic islets, supporting insulin regulation and digestive metabolic fire."
+    },
+    {
+      "name": "Bhujangasana (Cobra Pose)",
+      "target_conditions": ["respiratory_mild", "posture", "mild_fatigue"],
+      "how_to": "Lie prone on stomach with palms placed flat under shoulders. Inhale and slowly lift chest off floor, keeping elbows slightly bent and shoulders relaxed away from ears. Gaze gently upward for 20-30 seconds. Exhale and lower slowly.",
+      "benefit": "Expands thoracic cavity and lung volume, eases mild upper respiratory congestion, and strengthens posterior kinetic chain."
+    },
+    {
+      "name": "Shavasana & Bhramari Pranayama (Humming Bee Breath)",
+      "target_conditions": ["mild_headache", "stress", "insomnia", "general_wellness"],
+      "how_to": "Sit quietly with eyes closed. Place index fingers lightly on tragus cartilage of ears. Inhale deeply through nose, and while exhaling make a smooth, steady humming bee sound in the throat. Repeat 7-10 rounds followed by 5 minutes of stillness in Shavasana.",
+      "benefit": "Promotes nitric oxide release, induces cerebral relaxation, and alleviates tension-type cranial pressure."
+    }
+  ],
+  "dietary_guidelines": {
+    "hypertension": {
+      "focus": "Low-Sodium DASH Dietary Pattern",
+      "tips": [
+        "Restrict added dietary sodium to under 2,000 mg/day (less than 1 level teaspoon salt).",
+        "Increase potassium-rich local whole foods such as coconut water, bananas, spinach, and drumstick leaves (moringa).",
+        "Minimize intake of preserved, canned, deep-fried, and heavily salted processed snacks."
+      ]
+    },
+    "hyperglycemia": {
+      "focus": "Low Glycemic Index & High Dietary Fiber",
+      "tips": [
+        "Replace refined white rice and maida with whole millets (ragi, jowar, bajra) and whole oats.",
+        "Incorporate bitter gourd (karela), fenugreek (methi) seeds, and split pulses to blunt postprandial glucose spikes.",
+        "Avoid sugary sweetened beverages, fruit juices, and refined confectioneries."
+      ]
+    },
+    "respiratory_cold": {
+      "focus": "Anti-inflammatory & Warm Hydration",
+      "tips": [
+        "Drink warm water, herbal teas with tulsi (holy basil), ginger, and a dash of turmeric throughout the day.",
+        "Consume clear vegetable or lentil soups to maintain electrolyte hydration and thin mucus secretions.",
+        "Avoid ice-cold beverages, dairy overload during active congestion, and smoking/smoke exposure."
+      ]
+    },
+    "general_wellness": {
+      "focus": "Balanced Nutrient-Dense Whole Foods",
+      "tips": [
+        "Maintain adequate hydration (2.5 to 3 liters of clean drinking water daily).",
+        "Aim for half your plate filled with colorful seasonal vegetables and raw salads.",
+        "Ensure consistent meal timing and allow at least 2 hours between dinner and sleep."
+      ]
+    }
+  },
+  "physical_activity": {
+    "sedentary_or_high_risk": {
+      "plan": "Gentle daily 25-minute brisk walking in shaded morning/evening, supplemented with light joint mobilization (Sukshma Vyayama). Avoid sudden strenuous exertion until physician clearance."
+    },
+    "moderate_fit": {
+      "plan": "30-40 minutes of moderate cardiovascular aerobic activity (brisk walking, cycling, or light swimming) 5 days per week plus 2 sessions of bodyweight strength maintenance."
+    }
+  },
+  "disclaimer": "DISCLAIMER: This multi-modal triage tool is an AI-powered clinical decision-support prototype created to assist healthcare access and prioritization in underserved and rural areas. It does NOT constitute a definitive medical diagnosis or replacement for licensed clinical consultation. In cases of acute pain or emergency, seek immediate professional care."
+}

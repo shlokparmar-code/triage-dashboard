@@ -1,0 +1,148 @@
+{
+  "age_brackets": [
+    {
+      "name": "Neonate (< 2 months)",
+      "min_age_months": 0,
+      "max_age_months": 2,
+      "hr_normal": [100, 180],
+      "rr_normal": [30, 60],
+      "rr_fast_threshold": 60,
+      "spo2_normal_min": 95.0,
+      "temp_normal": [36.5, 37.5]
+    },
+    {
+      "name": "Infant (2 - 12 months)",
+      "min_age_months": 2,
+      "max_age_months": 12,
+      "hr_normal": [100, 160],
+      "rr_normal": [30, 50],
+      "rr_fast_threshold": 50,
+      "spo2_normal_min": 95.0,
+      "temp_normal": [36.5, 37.5]
+    },
+    {
+      "name": "Young Child (1 - 5 years)",
+      "min_age_months": 12,
+      "max_age_months": 60,
+      "hr_normal": [80, 140],
+      "rr_normal": [20, 40],
+      "rr_fast_threshold": 40,
+      "spo2_normal_min": 95.0,
+      "temp_normal": [36.5, 37.5]
+    },
+    {
+      "name": "Older Child (5 - 12 years)",
+      "min_age_months": 60,
+      "max_age_months": 144,
+      "hr_normal": [70, 120],
+      "rr_normal": [15, 30],
+      "rr_fast_threshold": 30,
+      "spo2_normal_min": 95.0,
+      "temp_normal": [36.5, 37.5]
+    },
+    {
+      "name": "Adolescent (12 - 18 years)",
+      "min_age_months": 144,
+      "max_age_months": 216,
+      "hr_normal": [60, 100],
+      "rr_normal": [12, 22],
+      "rr_fast_threshold": 24,
+      "spo2_normal_min": 95.0,
+      "temp_normal": [36.5, 37.5]
+    }
+  ],
+  "who_imnci_danger_signs_under5": [
+    {
+      "id": "unable_to_drink",
+      "label": "Unable to drink or breastfeed",
+      "description": "Child cannot suck or swallow liquids"
+    },
+    {
+      "id": "vomits_everything",
+      "label": "Vomits everything",
+      "description": "Child cannot retain any food or fluids"
+    },
+    {
+      "id": "convulsions",
+      "label": "Convulsions or fits (current or during illness)",
+      "description": "Seizures or involuntary body shaking"
+    },
+    {
+      "id": "lethargic_unconscious",
+      "label": "Lethargic or unconscious / abnormally sleepy",
+      "description": "Child is difficult to awaken or non-responsive"
+    },
+    {
+      "id": "chest_indrawing",
+      "label": "Subcostal chest indrawing",
+      "description": "Lower chest wall pulls inward during inhalation"
+    },
+    {
+      "id": "stridor_calm",
+      "label": "Stridor in a calm child",
+      "description": "Harsh inspiratory sound when not crying"
+    },
+    {
+      "id": "severe_dehydration",
+      "label": "Signs of severe dehydration",
+      "description": "Sunken eyes, skin pinch takes >2 seconds to return"
+    },
+    {
+      "id": "blood_in_stool",
+      "label": "Blood in stool (dysentery signs)",
+      "description": "Visible fresh blood in watery or loose stool"
+    }
+  ],
+  "pregnancy_red_flags": [
+    {
+      "id": "preg_severe_headache_bp",
+      "label": "Severe persistent headache with high blood pressure (>=140/90)",
+      "preeclampsia": true
+    },
+    {
+      "id": "preg_blurred_vision",
+      "label": "Blurred vision, seeing spots, or photophobia",
+      "preeclampsia": true
+    },
+    {
+      "id": "preg_convulsions",
+      "label": "Convulsions, fits, or loss of consciousness",
+      "preeclampsia": true
+    },
+    {
+      "id": "preg_heavy_bleeding",
+      "label": "Heavy vaginal bleeding (soaking pad within 1 hour)",
+      "preeclampsia": false
+    },
+    {
+      "id": "preg_severe_abdominal_pain",
+      "label": "Severe continuous abdominal or epigastric pain",
+      "preeclampsia": false
+    },
+    {
+      "id": "preg_reduced_fetal_movement",
+      "label": "Reduced or absent fetal movements (after 24 weeks)",
+      "preeclampsia": false
+    },
+    {
+      "id": "preg_fever",
+      "label": "High fever with chills or foul vaginal discharge",
+      "preeclampsia": false
+    },
+    {
+      "id": "preg_leaking_fluid",
+      "label": "Sudden gush or continuous leaking of watery fluid",
+      "preeclampsia": false
+    },
+    {
+      "id": "preg_swelling_face_hands",
+      "label": "Sudden severe swelling of face, eyes, or hands",
+      "preeclampsia": true
+    },
+    {
+      "id": "preg_dyspnea",
+      "label": "Difficulty breathing or acute chest pain",
+      "preeclampsia": false
+    }
+  ]
+}

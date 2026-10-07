@@ -1,0 +1,20 @@
+{
+  "LOW": {
+    "level": "Primary Self-Care & Community Health",
+    "facility": "Home / Community Health Post / Village Health Nurse",
+    "timeline": "Routine / Elective (within 7 days if symptoms persist)",
+    "action": "Maintain supportive home care, oral hydration, rest, and lifestyle adjustments. Follow up with local community health worker if symptoms do not improve in 48-72 hours."
+  },
+  "MEDIUM": {
+    "level": "Primary Care Physician Consultation",
+    "facility": "Primary Health Centre (PHC) / Community Health Centre (CHC) / Outpatient Clinic",
+    "timeline": "Within 24 to 48 hours",
+    "action": "Schedule an in-person clinical evaluation by a medical doctor. Monitor vital signs twice daily. Seek earlier medical attention if fever rises, breathing becomes labored, or pain intensifies."
+  },
+  "HIGH": {
+    "level": "Emergency-Capable Hospital Care",
+    "facility": "Sub-District Hospital / District Hospital / Tertiary Emergency Department",
+    "timeline": "Immediate (Emergency Transport)",
+    "action": "Proceed to the nearest emergency department or call emergency ambulance dispatch immediately. Keep the patient at rest, maintain airway, loosen clothing, and prepare identification and medication history."
+  }
+}
