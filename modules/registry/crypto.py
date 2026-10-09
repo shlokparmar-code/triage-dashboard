@@ -92,6 +92,9 @@ def mask_mobile(raw_mobile: str) -> str:
     return "******"
 
 
+mask_phone = mask_mobile
+
+
 def validate_mobile(country_code: str, number_str: str) -> Tuple[bool, str, str]:
     """Validate phone number against country specific rules.
 

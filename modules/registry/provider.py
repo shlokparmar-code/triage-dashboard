@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 import config
 from modules.registry.crypto import encrypt_mobile, decrypt_mobile, hash_mobile, mask_mobile
-from modules.registry.db import get_db_connection, init_db
+from modules.registry.db import get_db_connection, init_db, get_age_from_dob
 
 
 class HistoryProvider(ABC):
@@ -107,7 +107,8 @@ class LocalRegistryProvider(HistoryProvider):
         return self._format_patient_dict(row)
 
     def register_patient(
-        self, name: str, age: int, sex: str, raw_mobile: str, consent_given: bool = True
+        self, name: str, age: int, sex: str, raw_mobile: str, consent_given: bool = True,
+        date_of_birth: Optional[str] = None
     ) -> Dict[str, Any]:
         if not consent_given:
             raise ValueError("Patient consent is required to create a health record.")
@@ -121,13 +122,15 @@ class LocalRegistryProvider(HistoryProvider):
         m_hash = hash_mobile(raw_mobile)
         m_enc = encrypt_mobile(raw_mobile)
         created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Estimate DOB from age if not provided
+        dob = date_of_birth or f"{datetime.now().year - int(age)}-07-01"
 
         conn = get_db_connection(self.db_path)
         cur = conn.cursor()
         cur.execute("""
-        INSERT INTO patients (patient_id, name, age, sex, mobile_hash, mobile_encrypted, consent_given, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (patient_id, name.strip(), int(age), sex.strip(), m_hash, m_enc, 1 if consent_given else 0, created_at))
+        INSERT INTO patients (patient_id, name, age, sex, mobile_hash, mobile_encrypted, consent_given, created_at, date_of_birth)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (patient_id, name.strip(), int(age), sex.strip(), m_hash, m_enc, 1 if consent_given else 0, created_at, dob))
         conn.commit()
         conn.close()
 
@@ -136,6 +139,7 @@ class LocalRegistryProvider(HistoryProvider):
             "patient_id": patient_id,
             "name": name.strip(),
             "age": int(age),
+            "date_of_birth": dob,
             "sex": sex.strip(),
             "mobile_masked": mask_mobile(raw_mobile),
             "consent_given": consent_given,

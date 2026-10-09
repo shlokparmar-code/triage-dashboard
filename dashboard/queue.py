@@ -18,6 +18,63 @@ import config
 from modules.registry.db import get_db_connection, init_db
 
 
+# ------------------------------------------------------------
+# WAITING-TIME ESCALATION
+# Patients can get worse while waiting. Anyone waiting longer than the limit
+# for their tier is flagged OVERDUE so staff re-check them.
+# Limits are in minutes. Override in config.py with WAIT_ESCALATION_MINUTES.
+# ------------------------------------------------------------
+DEFAULT_WAIT_LIMITS_MIN = {"HIGH": 10, "MEDIUM": 30, "LOW": 60}
+
+
+def get_wait_limits() -> Dict[str, int]:
+    """Return waiting limits per tier (minutes), merging config overrides."""
+    limits = dict(DEFAULT_WAIT_LIMITS_MIN)
+    cfg = getattr(config, "WAIT_ESCALATION_MINUTES", None)
+    if isinstance(cfg, dict):
+        limits.update({k: int(v) for k, v in cfg.items() if k in limits})
+    return limits
+
+
+def minutes_waiting(arrival_time: str, now: Optional[datetime] = None) -> int:
+    """Whole minutes since arrival_time ('YYYY-MM-DD HH:MM:SS'). Bad input gives 0."""
+    now = now or datetime.now()
+    try:
+        arrived = datetime.fromisoformat(str(arrival_time).strip())
+    except (ValueError, TypeError):
+        return 0
+    return max(0, int((now - arrived).total_seconds() // 60))
+
+
+def format_wait(minutes: int) -> str:
+    """Readable waiting time, e.g. '45 min' or '1 h 05 min'."""
+    if minutes < 60:
+        return f"{minutes} min"
+    return f"{minutes // 60} h {minutes % 60:02d} min"
+
+
+def is_overdue(
+    patient: Dict[str, Any],
+    now: Optional[datetime] = None,
+    limits: Optional[Dict[str, int]] = None,
+) -> bool:
+    """True if the patient has waited longer than the limit for their tier."""
+    limits = limits or get_wait_limits()
+    limit = limits.get(str(patient.get("urgency", "")).upper())
+    if limit is None:
+        return False
+    return minutes_waiting(patient.get("arrival_time", ""), now) > limit
+
+
+def get_overdue_patients(
+    patients: List[Dict[str, Any]], now: Optional[datetime] = None
+) -> List[Dict[str, Any]]:
+    """Return the overdue patients, longest wait first."""
+    limits = get_wait_limits()
+    late = [p for p in patients if is_overdue(p, now, limits)]
+    return sorted(late, key=lambda p: minutes_waiting(p["arrival_time"], now), reverse=True)
+
+
 def add_to_queue(
     patient_id: str,
     hospital_id: str,
@@ -196,6 +253,49 @@ def export_queue_csv(hospital_id: Optional[str] = None, db_path: Optional[Path] 
     return output.getvalue()
 
 
+def export_queue_pdf(hospital_id: Optional[str] = None, db_path: Optional[Path] = None) -> bytes:
+    """Export the active triage queue (Priority Lane first) as a PDF."""
+    from xml.sax.saxutils import escape
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    priority_lane, regular_queue = get_queue(hospital_id, db_path)
+    styles = getSampleStyleSheet()
+    cell = styles["BodyText"]
+    cell.fontSize = 8
+    cell.leading = 10
+
+    def P(text: Any) -> Paragraph:
+        return Paragraph(escape(str(text)), cell)
+
+    rows = [[P(h) for h in ["Position", "Lane", "Patient ID", "Name", "Urgency", "Score", "Complaint", "Arrival"]]]
+    for i, p in enumerate(priority_lane, start=1):
+        rows.append([P(f"Priority-{i}"), P("Priority Lane"), P(p["patient_id"]), P(p["name"]),
+                     P(p["urgency"]), P(f"{p['score']:.0%}"), P(p["complaint"]), P(p["arrival_time"])])
+    for i, p in enumerate(regular_queue, start=1):
+        rows.append([P(f"Regular-{i}"), P("Standard Queue"), P(p["patient_id"]), P(p["name"]),
+                     P(p["urgency"]), P(f"{p['score']:.0%}"), P(p["complaint"]), P(p["arrival_time"])])
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=landscape(A4), leftMargin=12 * mm, rightMargin=12 * mm,
+                            topMargin=12 * mm, bottomMargin=12 * mm, title="Triage Queue")
+    table = Table(rows, colWidths=[24*mm, 28*mm, 28*mm, 40*mm, 22*mm, 16*mm, 75*mm, 38*mm], repeatRows=1)
+    style = [
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e3a8a")),
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]
+    for r in range(1, len(priority_lane) + 1):
+        style.append(("BACKGROUND", (0, r), (-1, r), colors.HexColor("#fee2e2")))
+    table.setStyle(TableStyle(style))
+    head = Paragraph(f"Triage Queue - {escape(str(hospital_id or 'All'))} - {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles["Title"])
+    doc.build([head, Spacer(1, 4 * mm), table])
+    return buf.getvalue()
+
+
 def load_demo_queue_patients(hospital_id: str = "HOSP-001", db_path: Optional[Path] = None) -> None:
     """Seed a realistic set of demo waiting patients to demonstrate queue dynamics."""
     now = datetime.now()
@@ -302,12 +402,11 @@ def render_queue_ui(hospital_id: str = "HOSP-001") -> None:
             st.rerun()
 
     with col_btn3:
-        csv_data = export_queue_csv(hospital_id)
         st.download_button(
-            "📥 Export Queue (CSV)",
-            data=csv_data,
-            file_name=f"triage_queue_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
+            "📥 Export Queue (PDF)",
+            data=export_queue_pdf(hospital_id),
+            file_name=f"triage_queue_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+            mime="application/pdf",
             use_container_width=True
         )
 
@@ -334,6 +433,18 @@ def render_queue_ui(hospital_id: str = "HOSP-001") -> None:
     with m_col4:
         st.metric("👥 Total Waiting", f"{n_priority + n_med + n_low}")
 
+    # Waiting-time escalation banner
+    overdue = get_overdue_patients(priority_lane + regular_queue)
+    if overdue:
+        names = ", ".join(
+            f"{p['name']} ({p['urgency']}, {format_wait(minutes_waiting(p['arrival_time']))})"
+            for p in overdue
+        )
+        st.warning(
+            f"⏰ **{len(overdue)} patient(s) have waited too long and need a re-check:** {names}. "
+            "Re-assess them in the Clinical Triage tab, since their condition may have changed."
+        )
+
     st.markdown("---")
 
     # ==========================================
@@ -352,7 +463,7 @@ def render_queue_ui(hospital_id: str = "HOSP-001") -> None:
                         <span style="background: #dc2626; color: white; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 0.82rem;">HIGH ({p['score']:.0%})</span>
                     </div>
                     <p style="margin: 6px 0 2px 0; font-size: 0.94rem; color: #7f1d1d;"><b>Chief Complaint:</b> {p['complaint']}</p>
-                    <small style="color: #991b1b;">Arrival: {p['arrival_time']}</small>
+                    <small style="color: #991b1b;">Arrival: {p['arrival_time']} &nbsp;|&nbsp; Waiting: {format_wait(minutes_waiting(p['arrival_time']))}{' &nbsp;|&nbsp; <b>⏰ OVERDUE</b>' if is_overdue(p) else ''}</small>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -381,6 +492,8 @@ def render_queue_ui(hospital_id: str = "HOSP-001") -> None:
         for idx, p in enumerate(regular_queue, start=1):
             tier_color = "#fef3c7" if p["urgency"] == "MEDIUM" else "#d1fae5"
             border_color = "#f59e0b" if p["urgency"] == "MEDIUM" else "#10b981"
+            if is_overdue(p):
+                border_color = "#dc2626"
             badge_bg = "#d97706" if p["urgency"] == "MEDIUM" else "#059669"
 
             with st.container():
@@ -391,7 +504,7 @@ def render_queue_ui(hospital_id: str = "HOSP-001") -> None:
                         <span style="background: {badge_bg}; color: white; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 0.82rem;">{p['urgency']} ({p['score']:.0%})</span>
                     </div>
                     <p style="margin: 5px 0 2px 0; font-size: 0.92rem; color: #374151;"><b>Chief Complaint:</b> {p['complaint']}</p>
-                    <small style="color: #6b7280;">Arrival: {p['arrival_time']}</small>
+                    <small style="color: #6b7280;">Arrival: {p['arrival_time']} &nbsp;|&nbsp; Waiting: {format_wait(minutes_waiting(p['arrival_time']))}{' &nbsp;|&nbsp; <b style="color:#b91c1c;">⏰ OVERDUE - re-check patient</b>' if is_overdue(p) else ''}</small>
                 </div>
                 """, unsafe_allow_html=True)
 

@@ -106,5 +106,39 @@ CUSTOM_CSS = """
         margin-top: 24px;
         line-height: 1.4;
     }
+
+    /* ===== PERMANENTLY FIXED SIDEBAR — NEVER COLLAPSES ===== */
+    [data-testid="stSidebarCollapseButton"] { display: none !important; }
+    [data-testid="stSidebarCollapsedControl"] { display: none !important; }
+    [data-testid="collapsedControl"] { display: none !important; }
+    button[kind="header"] { display: none !important; }
+    .css-1rs6os { display: none !important; }
+    [data-testid="stSidebar"] {
+        min-width: 300px !important;
+        max-width: 300px !important;
+        transform: none !important;
+    }
+    section[data-testid="stSidebar"] > div { width: 300px !important; }
+
+    /* ===== LANDING SCREEN CARDS ===== */
+    .landing-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 32px 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        margin: 8px 0;
+    }
+    .landing-card:hover {
+        border-color: #2563eb;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+    }
+    .step-indicator {
+        font-size: 0.82rem;
+        color: #64748b;
+        line-height: 1.8;
+    }
 </style>
 """

@@ -3,7 +3,7 @@
 import json
 import sqlite3
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pathlib import Path
 from typing import Optional
 
@@ -11,6 +11,27 @@ import sys
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 import config
 from modules.registry.crypto import encrypt_mobile, hash_mobile
+
+
+def get_age_from_dob(dob_str: str) -> dict:
+    """Return {'years': int, 'months': int, 'display': str} from ISO date string (YYYY-MM-DD)."""
+    if not dob_str:
+        return {"years": 0, "months": 0, "display": "Unknown"}
+    try:
+        dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+        today = date.today()
+        years = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        total_months = (today.year - dob.year) * 12 + today.month - dob.month
+        if today.day < dob.day:
+            total_months -= 1
+        months = total_months % 12
+        if years < 5:
+            display = f"{years} yr {months} mo" if years > 0 else f"{total_months} months"
+        else:
+            display = f"{years} years"
+        return {"years": max(0, years), "months": max(0, months), "display": display}
+    except (ValueError, TypeError):
+        return {"years": 0, "months": 0, "display": "Unknown"}
 
 
 def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
@@ -111,6 +132,20 @@ def init_db(db_path: Optional[Path] = None) -> None:
     """)
 
     conn.commit()
+
+    # --- Migration: add date_of_birth column if not present ---
+    cur.execute("PRAGMA table_info(patients)")
+    existing_cols = {row[1] for row in cur.fetchall()}
+    if "date_of_birth" not in existing_cols:
+        cur.execute("ALTER TABLE patients ADD COLUMN date_of_birth TEXT")
+        # Back-fill estimated DOB from age (mid-year)
+        cur.execute("SELECT patient_id, age FROM patients WHERE date_of_birth IS NULL OR date_of_birth = ''")
+        rows = cur.fetchall()
+        current_year = datetime.now().year
+        for row in rows:
+            est_dob = f"{current_year - row[1]}-07-01"
+            cur.execute("UPDATE patients SET date_of_birth = ? WHERE patient_id = ?", (est_dob, row[0]))
+        conn.commit()
 
     # Seed Initial Data if empty
     cur.execute("SELECT COUNT(*) FROM hospitals")

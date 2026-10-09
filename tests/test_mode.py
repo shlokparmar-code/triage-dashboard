@@ -42,3 +42,31 @@ def test_mode_invariance_of_triage_results():
     assert res_1["final_urgency"] == res_2["final_urgency"]
     assert res_1["final_score"] == res_2["final_score"]
     assert res_1["final_urgency"] == "MEDIUM"
+
+
+def test_dual_mode_pdf_generation():
+    """Verify both clinical hospital PDF and patient-friendly home PDF generate valid bytes."""
+    from dashboard.pdf_export import generate_triage_pdf, generate_home_pdf
+
+    risk_res = {"module": "Risk Screening", "urgency": "LOW", "score": 0.15, "explanation": "Low risk"}
+    vit_res = {"module": "Vitals Anomaly", "urgency": "LOW", "score": 0.10, "explanation": "Vitals normal"}
+    sym_res = {"module": "Symptom Triage", "urgency": "LOW", "score": 0.12, "explanation": "Mild fatigue"}
+
+    fusion_res = fuse_triage_modalities(risk_res, vit_res, sym_res)
+    patient_info = {
+        "name": "Sunita Devi",
+        "age": 28,
+        "sex": "Female",
+        "mobile_number": "+919876543210"
+    }
+
+    # Hospital PDF
+    hosp_pdf = generate_triage_pdf(fusion_res, risk_res, vit_res, sym_res, patient_info)
+    assert len(hosp_pdf) > 1000
+    assert isinstance(hosp_pdf, bytes)
+
+    # Home PDF
+    home_pdf = generate_home_pdf(fusion_res, patient_info)
+    assert len(home_pdf) > 1000
+    assert isinstance(home_pdf, bytes)
+
