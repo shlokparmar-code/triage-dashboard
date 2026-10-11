@@ -589,41 +589,47 @@ if is_home():
         )
         st.session_state["home_city"] = home_city
 
-    st.sidebar.subheader("👥 Emergency Contact")
-    st.sidebar.caption("A friend, guardian or relative who should know about your result.")
-    st.session_state.setdefault("sec_relation", contact_alert.RELATIONS[0])
-    st.session_state.setdefault("sec_country_code", "+91")
-    st.session_state.setdefault("sec_mobile_raw", "")
-    st.session_state.setdefault("share_consent", False)
 
-    _ri = contact_alert.RELATIONS.index(st.session_state["sec_relation"]) if st.session_state["sec_relation"] in contact_alert.RELATIONS else 0
-    sec_relation = st.sidebar.selectbox("Who is this person?", contact_alert.RELATIONS, index=_ri, key="_sec_relation_select")
-    st.session_state["sec_relation"] = sec_relation
+# Emergency contact: shown in BOTH Home and Hospital modes
+st.sidebar.subheader("👥 Emergency Contact")
+st.sidebar.caption(
+    "Next of kin / attendant who should know about this result."
+    if is_hospital() else
+    "A friend, guardian or relative who should know about your result."
+)
+st.session_state.setdefault("sec_relation", contact_alert.RELATIONS[0])
+st.session_state.setdefault("sec_country_code", "+91")
+st.session_state.setdefault("sec_mobile_raw", "")
+st.session_state.setdefault("share_consent", False)
 
-    _sc1, _sc2 = st.sidebar.columns([1.2, 2.0])
-    with _sc1:
-        _codes = list(config.COUNTRY_PHONE_CONFIG.keys())
-        _cidx = _codes.index(st.session_state["sec_country_code"]) if st.session_state["sec_country_code"] in _codes else 0
-        sec_code = st.selectbox("Code:", _codes, index=_cidx, key="_sec_cc_select")
-        st.session_state["sec_country_code"] = sec_code
-    with _sc2:
-        sec_num = st.text_input("Contact's Mobile:", value=st.session_state["sec_mobile_raw"], key="_sec_mobile_input")
-        st.session_state["sec_mobile_raw"] = sec_num
+_ri = contact_alert.RELATIONS.index(st.session_state["sec_relation"]) if st.session_state["sec_relation"] in contact_alert.RELATIONS else 0
+sec_relation = st.sidebar.selectbox("Who is this person?", contact_alert.RELATIONS, index=_ri, key="_sec_relation_select")
+st.session_state["sec_relation"] = sec_relation
 
-    if sec_num.strip():
-        sec_valid, sec_full, _sec_err = contact_alert.validate_secondary(sec_code, sec_num, full_phone if is_valid_phone else "")
-        if sec_valid:
-            st.sidebar.caption(f"Contact: `{contact_alert.mask_number(sec_full)}`")
-        else:
-            st.sidebar.warning(f"⚠️ {_sec_err}")
+_sc1, _sc2 = st.sidebar.columns([1.2, 2.0])
+with _sc1:
+    _codes = list(config.COUNTRY_PHONE_CONFIG.keys())
+    _cidx = _codes.index(st.session_state["sec_country_code"]) if st.session_state["sec_country_code"] in _codes else 0
+    sec_code = st.selectbox("Code:", _codes, index=_cidx, key="_sec_cc_select")
+    st.session_state["sec_country_code"] = sec_code
+with _sc2:
+    sec_num = st.text_input("Contact's Mobile:", value=st.session_state["sec_mobile_raw"], key="_sec_mobile_input")
+    st.session_state["sec_mobile_raw"] = sec_num
 
-    share_consent = st.sidebar.checkbox(
-        "I agree to share my result (urgency level and main concerns) with this contact.",
-        value=st.session_state["share_consent"],
-        key="_share_consent_checkbox",
-    )
-    st.session_state["share_consent"] = share_consent
-    st.sidebar.markdown("---")
+if sec_num.strip():
+    sec_valid, sec_full, _sec_err = contact_alert.validate_secondary(sec_code, sec_num, full_phone if is_valid_phone else "")
+    if sec_valid:
+        st.sidebar.caption(f"Contact: `{contact_alert.mask_number(sec_full)}`")
+    else:
+        st.sidebar.warning(f"⚠️ {_sec_err}")
+
+share_consent = st.sidebar.checkbox(
+    "I agree to share my result (urgency level and main concerns) with this contact.",
+    value=st.session_state["share_consent"],
+    key="_share_consent_checkbox",
+)
+st.session_state["share_consent"] = share_consent
+st.sidebar.markdown("---")
 
 # Physical limits used to hide unsuitable exercises/yoga (both modes)
 st.session_state.setdefault("wellness_limits", [])
@@ -1271,15 +1277,15 @@ with tab_assessment:
     # 3b. Home-only: nearby hospitals (with busy-hospital redirect) and contact alert
     if is_home():
         render_nearby_hospitals(effective_urgency, home_city)
-        render_contact_alert(
-            patient_name=st.session_state["patient_name"],
-            urgency=effective_urgency,
-            concerns=collect_concerns(special_pop_res, symptom_res, st.session_state["symptom_text"]),
-            contact_full=sec_full,
-            contact_valid=sec_valid,
-            share_consent=share_consent,
-            relation=sec_relation,
-        )
+    render_contact_alert(
+        patient_name=st.session_state["patient_name"],
+        urgency=effective_urgency,
+        concerns=collect_concerns(special_pop_res, symptom_res, st.session_state["symptom_text"]),
+        contact_full=sec_full,
+        contact_valid=sec_valid,
+        share_consent=share_consent,
+        relation=sec_relation,
+    )
 
     # 4. Actionable Lifestyle, Diet & Supportive Care (Common to both)
     st.markdown("### 🌿 Supportive Wellness & Care Guidance")
