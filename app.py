@@ -1,4 +1,4 @@
-"""Multi-Modal AI Medical Triage Dashboard.
+"""TriageSetu - Multi-Modal AI Medical Triage Dashboard.
 
 A unified Streamlit application combining tabular chronic risk, time-series
 physiological vitals telemetry, NLP free-text symptom triage, maternal/pediatric
@@ -70,7 +70,7 @@ from modules.vitals_anomaly.model import VitalsAnomalyDetector
 # STREAMLIT PAGE CONFIG & STYLES
 # ==========================================
 st.set_page_config(
-    page_title="AI Medical Triage Dashboard",
+    page_title="TriageSetu",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -291,6 +291,8 @@ if not st.session_state["mode_chosen"]:
 def load_benchmark_patient(preset_key: str):
     """Load benchmark patient scenarios covering adult, pediatric, maternal, and multi-hospital flows."""
     st.session_state["_std_ver"] = st.session_state.get("_std_ver", 0) + 1  # refresh vitals/baseline boxes
+    st.session_state["has_home_vitals"] = True
+    st.session_state["has_home_baseline"] = True
     if preset_key == "ADULT_LOW":
         st.session_state["patient_name"] = "Aarav Sharma"
         st.session_state["patient_country_code"] = "+91"
@@ -749,47 +751,69 @@ st.sidebar.markdown("---")
 # Section 3: Vitals Telemetry / Measurements
 st.sidebar.subheader("3. Physiological Vital Signs")
 if is_home():
-    st.sidebar.caption("Enter measurements from home thermometer, pulse oximeter, or BP cuff:")
-    m_v1, m_v2 = st.sidebar.columns(2)
-    with m_v1:
-        v_hr = st.number_input("Pulse / HR (bpm)", min_value=30, max_value=220, value=int(st.session_state["manual_hr"]), key=f"w_manual_hr_{st.session_state['_std_ver']}",
-                               help=reference_ranges.range_text("heart_rate"))
-        v_temp = st.number_input("Temp (°C)", min_value=33.0, max_value=43.0, value=float(st.session_state["manual_temp"]), step=0.1, key=f"w_manual_temp_{st.session_state['_std_ver']}",
-                                 help=reference_ranges.range_text("temperature"))
-    with m_v2:
-        v_spo2 = st.number_input("SpO2 Oxygen (%)", min_value=60.0, max_value=100.0, value=float(st.session_state["manual_spo2"]), step=0.5, key=f"w_manual_spo2_{st.session_state['_std_ver']}",
-                                 help=reference_ranges.range_text("spo2"))
-        v_rr = st.number_input("Breaths / min", min_value=8, max_value=80, value=int(st.session_state["manual_rr"]), key=f"w_manual_rr_{st.session_state['_std_ver']}",
-                               help=reference_ranges.range_text("resp_rate"))
-
-    st.session_state["manual_hr"] = v_hr
-    st.session_state["manual_spo2"] = v_spo2
-    st.session_state["manual_temp"] = v_temp
-    st.session_state["manual_rr"] = v_rr
-
-    # Compare with the standard adult ranges (adults only; children use pediatric tables)
-    if p_age >= 18:
-        _vit_off = reference_ranges.outside_range(
-            {"heart_rate": v_hr, "spo2": v_spo2, "temperature": v_temp, "resp_rate": v_rr}
-        )
-        if _vit_off:
-            st.sidebar.caption("⚠️ Outside the standard adult range:\n" + reference_ranges.format_outside(_vit_off))
-        else:
-            st.sidebar.caption("✅ All vitals are within the standard adult range.")
-    else:
-        st.sidebar.caption("ℹ️ Adult reference ranges do not apply to under-18 patients; pediatric ranges are used by the safety rules.")
-
-    # Generate synthetic telemetry from home inputs
-    vitals_df = pd.DataFrame({
-        "timestamp": pd.date_range(end=datetime.now(), periods=30, freq="10s"),
-        "heart_rate": np.clip(np.random.normal(v_hr, 2.0, 30), 30, 220),
-        "spo2": np.clip(np.random.normal(v_spo2, 0.5, 30), 60.0, 100.0),
-        "temperature": np.full(30, v_temp),
-        "respiratory_rate": np.full(30, v_rr),
-    })
+    st.session_state.setdefault("has_home_vitals", False)
+    has_vitals = st.sidebar.checkbox(
+        "I have measured my vitals today (optional)",
+        value=st.session_state["has_home_vitals"],
+    )
+    st.session_state["has_home_vitals"] = has_vitals
     model_type_key = "isolation_forest"
 
+    if not has_vitals:
+        st.sidebar.caption(
+            "No problem - most homes do not have a pulse oximeter or thermometer. "
+            "Your result will be based on your symptoms and age. Tick the box above if you do have readings."
+        )
+        # Neutral, fixed normal baseline so missing readings never push the result up or down.
+        v_hr, v_spo2, v_temp, v_rr = 72, 98.0, 37.0, 16
+        vitals_df = generate_synthetic_vitals(
+            duration_minutes=30, anomaly_type="none", seed=config.RANDOM_SEED
+        )
+    else:
+        st.sidebar.caption("Enter measurements from home thermometer, pulse oximeter, or BP cuff:")
+        m_v1, m_v2 = st.sidebar.columns(2)
+        with m_v1:
+            v_hr = st.number_input("Pulse / HR (bpm)", min_value=30, max_value=220, value=int(st.session_state["manual_hr"]), key=f"w_manual_hr_{st.session_state['_std_ver']}",
+                                   help=reference_ranges.range_text("heart_rate"))
+            v_temp = st.number_input("Temp (°C)", min_value=33.0, max_value=43.0, value=float(st.session_state["manual_temp"]), step=0.1, key=f"w_manual_temp_{st.session_state['_std_ver']}",
+                                     help=reference_ranges.range_text("temperature"))
+        with m_v2:
+            v_spo2 = st.number_input("SpO2 Oxygen (%)", min_value=60.0, max_value=100.0, value=float(st.session_state["manual_spo2"]), step=0.5, key=f"w_manual_spo2_{st.session_state['_std_ver']}",
+                                     help=reference_ranges.range_text("spo2"))
+            v_rr = st.number_input("Breaths / min", min_value=8, max_value=80, value=int(st.session_state["manual_rr"]), key=f"w_manual_rr_{st.session_state['_std_ver']}",
+                                   help=reference_ranges.range_text("resp_rate"))
+
+        st.session_state["manual_hr"] = v_hr
+        st.session_state["manual_spo2"] = v_spo2
+        st.session_state["manual_temp"] = v_temp
+        st.session_state["manual_rr"] = v_rr
+
+        # Compare with the standard adult ranges (adults only; children use pediatric tables)
+        if p_age >= 18:
+            _vit_off = reference_ranges.outside_range(
+                {"heart_rate": v_hr, "spo2": v_spo2, "temperature": v_temp, "resp_rate": v_rr}
+            )
+            if _vit_off:
+                st.sidebar.caption("⚠️ Outside the standard adult range:\n" + reference_ranges.format_outside(_vit_off))
+            else:
+                st.sidebar.caption("✅ All vitals are within the standard adult range.")
+        else:
+            st.sidebar.caption("ℹ️ Adult reference ranges do not apply to under-18 patients; pediatric ranges are used by the safety rules.")
+
+        # Telemetry built from the entered readings. FIXED seed: the same inputs always give the
+        # same series, so ticking an unrelated checkbox (e.g. emergency-contact consent)
+        # can no longer change the urgency tier.
+        _rng = np.random.default_rng(config.RANDOM_SEED)
+        vitals_df = pd.DataFrame({
+            "timestamp": pd.date_range(end=datetime.now(), periods=30, freq="10s"),
+            "heart_rate": np.clip(_rng.normal(v_hr, 2.0, 30), 30, 220),
+            "spo2": np.clip(_rng.normal(v_spo2, 0.5, 30), 60.0, 100.0),
+            "temperature": np.full(30, v_temp),
+            "respiratory_rate": np.full(30, v_rr),
+        })
+
 else:
+    has_vitals = True
     vitals_source = st.sidebar.radio("Telemetry Source:", ["Simulate Telemetry Stream", "Upload CSV"], index=0)
     vitals_model_choice = st.sidebar.selectbox("Model Architecture:", ["Isolation Forest (Default)", "Reconstruction Autoencoder"], index=0)
     model_type_key = "isolation_forest" if "Isolation" in vitals_model_choice else "autoencoder"
@@ -834,36 +858,53 @@ st.sidebar.markdown("---")
 
 # Section 4: Tabular Chronic Risk Parameters
 st.sidebar.subheader("4. Chronic Risk Baseline")
-c_b1, c_b2 = st.sidebar.columns(2)
-with c_b1:
-    p_bp = st.number_input("Resting BP Sys (mmHg)", min_value=70, max_value=240, value=int(st.session_state["patient_bp"]), key=f"w_patient_bp_{st.session_state['_std_ver']}",
-                           help=reference_ranges.range_text("bp_systolic"))
-    p_bp_dia = st.number_input("Resting BP Dia (mmHg)", min_value=40, max_value=140, value=int(st.session_state["patient_bp_dia"]), key=f"w_patient_bp_dia_{st.session_state['_std_ver']}",
-                               help=reference_ranges.range_text("bp_diastolic"))
-    p_chol = st.number_input("Cholesterol (mg/dL)", min_value=100, max_value=480, value=int(st.session_state["patient_chol"]), key=f"w_patient_chol_{st.session_state['_std_ver']}",
-                             help=reference_ranges.range_text("cholesterol"))
-with c_b2:
-    p_glucose = st.number_input("Blood Glucose (mg/dL)", min_value=50, max_value=400, value=int(st.session_state["patient_glucose"]), key=f"w_patient_glucose_{st.session_state['_std_ver']}",
-                                help=reference_ranges.range_text("glucose"))
-    p_bmi = st.number_input("BMI", min_value=12.0, max_value=55.0, value=float(st.session_state["patient_bmi"]), step=0.1, key=f"w_patient_bmi_{st.session_state['_std_ver']}",
-                            help=reference_ranges.range_text("bmi"))
+if is_home():
+    st.session_state.setdefault("has_home_baseline", False)
+    has_baseline = st.sidebar.checkbox(
+        "I know my BP, sugar, cholesterol or BMI (optional)",
+        value=st.session_state["has_home_baseline"],
+    )
+    st.session_state["has_home_baseline"] = has_baseline
+else:
+    has_baseline = True
 
-st.session_state["patient_bp"] = p_bp
-st.session_state["patient_bp_dia"] = p_bp_dia
-st.session_state["patient_chol"] = p_chol
-st.session_state["patient_glucose"] = p_glucose
-st.session_state["patient_bmi"] = p_bmi
+if not has_baseline:
+    st.sidebar.caption(
+        "Optional - skip this if you do not have recent readings. "
+        "Standard normal values are assumed so they do not affect your result."
+    )
+    p_bp, p_bp_dia, p_chol, p_glucose, p_bmi = 115, 75, 180, 90, 22.0
+else:
+    c_b1, c_b2 = st.sidebar.columns(2)
+    with c_b1:
+        p_bp = st.number_input("Resting BP Sys (mmHg)", min_value=70, max_value=240, value=int(st.session_state["patient_bp"]), key=f"w_patient_bp_{st.session_state['_std_ver']}",
+                               help=reference_ranges.range_text("bp_systolic"))
+        p_bp_dia = st.number_input("Resting BP Dia (mmHg)", min_value=40, max_value=140, value=int(st.session_state["patient_bp_dia"]), key=f"w_patient_bp_dia_{st.session_state['_std_ver']}",
+                                   help=reference_ranges.range_text("bp_diastolic"))
+        p_chol = st.number_input("Cholesterol (mg/dL)", min_value=100, max_value=480, value=int(st.session_state["patient_chol"]), key=f"w_patient_chol_{st.session_state['_std_ver']}",
+                                 help=reference_ranges.range_text("cholesterol"))
+    with c_b2:
+        p_glucose = st.number_input("Blood Glucose (mg/dL)", min_value=50, max_value=400, value=int(st.session_state["patient_glucose"]), key=f"w_patient_glucose_{st.session_state['_std_ver']}",
+                                    help=reference_ranges.range_text("glucose"))
+        p_bmi = st.number_input("BMI", min_value=12.0, max_value=55.0, value=float(st.session_state["patient_bmi"]), step=0.1, key=f"w_patient_bmi_{st.session_state['_std_ver']}",
+                                help=reference_ranges.range_text("bmi"))
 
-# Compare with the standard adult ranges (adults only)
-if p_age >= 18:
-    _base_off = reference_ranges.outside_range({
-        "bp_systolic": p_bp, "bp_diastolic": p_bp_dia, "cholesterol": p_chol,
-        "glucose": p_glucose, "bmi": p_bmi,
-    })
-    if _base_off:
-        st.sidebar.caption("⚠️ Outside the standard adult range:\n" + reference_ranges.format_outside(_base_off))
-    else:
-        st.sidebar.caption("✅ All baseline values are within the standard adult range.")
+    st.session_state["patient_bp"] = p_bp
+    st.session_state["patient_bp_dia"] = p_bp_dia
+    st.session_state["patient_chol"] = p_chol
+    st.session_state["patient_glucose"] = p_glucose
+    st.session_state["patient_bmi"] = p_bmi
+
+    # Compare with the standard adult ranges (adults only)
+    if p_age >= 18:
+        _base_off = reference_ranges.outside_range({
+            "bp_systolic": p_bp, "bp_diastolic": p_bp_dia, "cholesterol": p_chol,
+            "glucose": p_glucose, "bmi": p_bmi,
+        })
+        if _base_off:
+            st.sidebar.caption("⚠️ Outside the standard adult range:\n" + reference_ranges.format_outside(_base_off))
+        else:
+            st.sidebar.caption("✅ All baseline values are within the standard adult range.")
 
 st.sidebar.button(
     "↺ Reset to standard values",
@@ -915,6 +956,11 @@ special_pop_input = {
         "temperature": float(vitals_df["temperature"].mean()) if "temperature" in vitals_df else 37.0,
     },
 }
+if not has_vitals:  # assumed placeholder vitals must not drive the pediatric/maternal rules
+    special_pop_input.pop("vitals", None)
+if not has_baseline:
+    special_pop_input.pop("systolic_bp", None)
+    special_pop_input.pop("diastolic_bp", None)
 special_pop_res = evaluate_special_population(special_pop_input)
 
 # 4. Module A: Chronic Risk Screening (Adult only)

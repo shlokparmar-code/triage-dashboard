@@ -136,6 +136,6 @@ COUNTRY_PHONE_CONFIG = {
 
 # Emergency and Deployment Info
 DEFAULT_EMERGENCY_NUMBER = "112 / 108"
-PROJECT_TITLE = "Multi-Modal AI Medical Triage Dashboard"
+PROJECT_TITLE = "TriageSetu"
 SDG_ALIGNMENT = "UN SDG 3: Good Health and Well-Being (Target 3.8: Universal Health Coverage)"
 RANDOM_SEED = 42
