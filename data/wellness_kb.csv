@@ -1,0 +1,78 @@
+category,id,name,conditions,avoid_if,level,duration_or_frequency,pregnancy,min_age,evidence,summary
+yoga,y_tadasana,Tadasana (Mountain Pose),general|hypertension|elderly|desk_work,,gentle,1-2 minutes,safe,5,limited,Improves posture and body awareness; a calm start to a routine.
+yoga,y_vrikshasana,Vrikshasana (Tree Pose),general|stress|elderly,vertigo|knee_pain,gentle,30 seconds per side,modified,8,limited,Improves balance and focus.
+yoga,y_trikonasana,Trikonasana (Triangle Pose),high_glucose|overweight|back_pain|digestion,vertigo|back_injury|low_bp,moderate,30-45 seconds per side,avoid,12,limited,"Gently stretches the sides of the body, hips and legs."
+yoga,y_bhujangasana,Bhujangasana (Cobra Pose),back_pain|digestion|desk_work,hernia|recent_surgery|back_injury|pregnancy,moderate,20-30 seconds,avoid,12,limited,Strengthens the back muscles and opens the chest.
+yoga,y_vajrasana,Vajrasana (Thunderbolt Pose),digestion|acidity|general,knee_pain,gentle,5 minutes after meals,modified,8,limited,A comfortable seated posture commonly used after meals to support digestion.
+yoga,y_ardha_matsyendrasana,Ardha Matsyendrasana (Half Spinal Twist),digestion|back_pain|high_glucose|desk_work,back_injury|hernia|recent_surgery,moderate,30-45 seconds per side,avoid,12,limited,Improves spinal mobility and may help digestion.
+yoga,y_paschimottanasana,Paschimottanasana (Seated Forward Bend),stress|digestion|back_pain,back_injury|hernia|pregnancy,moderate,30-60 seconds,avoid,12,limited,Stretches the back and hamstrings and quiets the mind.
+yoga,y_setu_bandhasana,Setu Bandhasana (Bridge Pose),back_pain|stress|desk_work,neck_injury|pregnancy|vertigo,moderate,20-30 seconds,avoid,12,limited,"Strengthens the back, glutes and legs; opens the chest."
+yoga,y_marjari_bitilasana,Marjaryasana-Bitilasana (Cat-Cow),back_pain|general|desk_work|pregnancy,knee_pain,gentle,1-2 minutes,safe,5,limited,Gently mobilises the spine and eases stiffness from sitting.
+yoga,y_balasana,Balasana (Child's Pose),stress|back_pain|sleep,knee_pain,gentle,1-3 minutes,modified,5,limited,A restful posture that eases back tension and calms the mind.
+yoga,y_pawanmuktasana,Pawanmuktasana (Wind-Relieving Pose),digestion|constipation|acidity,hernia|recent_surgery|pregnancy,gentle,1-2 minutes,avoid,12,limited,Helps relieve gas and bloating.
+yoga,y_shavasana,Shavasana (Relaxation Pose),hypertension|stress|sleep|heart_risk|general,,gentle,5-10 minutes,modified,5,moderate,Deep rest that supports stress and blood pressure management.
+yoga,y_viparita_karani,Viparita Karani (Legs-Up-the-Wall),stress|sleep,hypertension|glaucoma|heart_risk|pregnancy|low_bp,gentle,5 minutes,avoid,12,limited,A restful pose commonly used for tired legs and winding down.
+yoga,y_sukhasana,Sukhasana (Easy Pose),stress|general|pregnancy,knee_pain,gentle,3-10 minutes,safe,5,limited,A comfortable base posture for breathing and meditation.
+yoga,y_surya_namaskar,"Surya Namaskar (Sun Salutation, slow pace)",overweight|high_glucose|general,hypertension|heart_risk|back_injury|pregnancy|postpartum|elderly|vertigo|low_bp,moderate,5-10 minutes,avoid,12,limited,Whole-body movement that raises the heart rate gently.
+yoga,y_ardha_kati_chakrasana,Ardha Kati Chakrasana (Standing Side Bend),digestion|desk_work|back_pain,vertigo|back_injury,gentle,30 seconds per side,modified,8,limited,Stretches the sides of the trunk and loosens the spine.
+yoga,y_neck_shoulder,Neck and Shoulder Release,desk_work|headache_tension|stress|pregnancy,neck_injury|vertigo,gentle,2-3 minutes,safe,8,limited,Eases tension from long sitting or screen use.
+yoga,y_chair_flow,Chair Yoga Flow,elderly|overweight|general|back_pain,,gentle,8-10 minutes,safe,12,limited,Mobility and gentle movement for people who find floor poses hard.
+yoga,p_diaphragmatic,Deep Abdominal (Diaphragmatic) Breathing,hypertension|stress|heart_risk|high_glucose|sleep|general|pregnancy,,gentle,5-10 minutes,safe,5,moderate,Slow breathing is linked with lower stress and modest blood pressure reduction.
+yoga,p_anulom_vilom,"Anulom Vilom (Alternate Nostril Breathing, no breath-holding)",hypertension|stress|general|heart_risk|pregnancy,cold_cough,gentle,5 minutes,safe,12,limited,Calming breathing practice used for stress and relaxation.
+yoga,p_bhramari,Bhramari (Humming Bee Breath),stress|sleep|hypertension|headache_tension,ear_infection,gentle,3-5 minutes,safe,8,limited,The humming and slow exhale have a calming effect.
+yoga,m_yoga_nidra,Yoga Nidra (Guided Relaxation),sleep|stress|hypertension|heart_risk,,gentle,15-25 minutes,modified,12,moderate,Guided deep relaxation that can help sleep and stress.
+yoga,m_mindful_breath,Mindful Breathing Meditation,stress|sleep|hypertension|general|heart_risk,,gentle,5-15 minutes,safe,12,moderate,Helps manage stress and supports better sleep.
+exercise,e_brisk_walk,Brisk Walking,hypertension|high_glucose|heart_risk|overweight|general|stress,,gentle,30 minutes; 5 days a week (about 150 minutes weekly),safe,12,strong,"Supports heart health, blood pressure, blood sugar and weight; improves mood."
+exercise,e_post_meal_walk,Short Walk After Meals,high_glucose|digestion|overweight|general,,gentle,10-15 minutes; after the main meals,safe,12,moderate,A short walk after eating helps lower the blood sugar rise after meals.
+exercise,e_cycling,Cycling or Stationary Bike,overweight|heart_risk|high_glucose|general,vertigo,moderate,20-30 minutes; 3-5 days a week,modified,12,strong,Low-impact aerobic exercise that is kind to the knees.
+exercise,e_swimming,Swimming or Water Walking,overweight|back_pain|general|pregnancy|elderly,ear_infection,moderate,20-30 minutes; 2-3 days a week,safe,8,moderate,Full-body exercise with very little joint stress.
+exercise,e_bodyweight_strength,Simple Strength Exercises,general|overweight|high_glucose|elderly|back_pain,recent_surgery,moderate,15-20 minutes; 2-3 days a week (non-consecutive days),modified,12,strong,Builds muscle and bone strength and helps blood sugar control.
+exercise,e_resistance_band,Resistance Band Exercises,elderly|general|back_pain,,gentle,15 minutes; 2-3 days a week,safe,14,moderate,Safe strength work for older adults and beginners.
+exercise,e_desk_stretch,Desk Break Stretches,desk_work|back_pain|headache_tension|stress,neck_injury,gentle,3-5 minutes; every hour of sitting,safe,10,moderate,"Breaks up long sitting and eases neck, shoulder and back tension."
+exercise,e_pelvic_floor,Pelvic Floor (Kegel) Exercises,pregnancy|postpartum|general,,gentle,5 minutes; daily,safe,16,moderate,Supports bladder control and recovery around pregnancy and childbirth.
+exercise,e_balance,Balance Exercises,elderly|general,vertigo,gentle,10 minutes; 3 days a week or more,safe,12,strong,Helps prevent falls in older adults.
+exercise,e_low_impact_march,Low-Impact Marching and Step Routine,overweight|back_pain|elderly|heart_risk|general,,gentle,15-20 minutes; daily,safe,12,moderate,Indoor activity that is easy on the joints.
+exercise,e_pregnancy_walk,Gentle Walking in Pregnancy,pregnancy|general,,gentle,20-30 minutes; most days,safe,14,moderate,"Helps energy, mood, sleep and healthy weight gain in pregnancy."
+exercise,e_child_play,Active Play for Children and Teenagers,child|general,,moderate,60 minutes; every day,safe,5,strong,Children and teenagers (5-17 years) are advised about 60 minutes of physical activity a day.
+exercise,e_older_adult,Activity Plan for Older Adults (60+),elderly|general,vertigo,gentle,30 minutes; most days,safe,60,strong,"A mix of walking, strength and balance supports independence and lowers the risk of falls."
+diet,d_general,Balanced everyday eating,general,,,,safe,2,strong,"Aim for at least 400 g (about 5 portions) of vegetables and fruit a day.; Choose whole grains such as whole wheat roti, brown rice, millets and oats."
+diet,d_hypertension,"Lower blood pressure (DASH-style, low salt)",hypertension|heart_risk,,,,safe,2,strong,"Cut salt at the table and in cooking; use lemon, herbs, jeera and ginger for flavour.; Eat more potassium-rich foods: banana, coconut water, leafy greens, beans, tomatoes (unless your doctor restricts potassium)."
+diet,d_high_glucose,Blood sugar friendly eating (low glycaemic index),high_glucose,,,,safe,2,moderate,"Choose whole grains and millets (ragi, jowar, bajra) in place of refined flour (maida) and polished white rice.; Fill half the plate with non-starchy vegetables and add dal, legumes or other protein."
+diet,d_heart,Heart-healthy eating,heart_risk|hypertension,,,,safe,2,strong,"Use small amounts of unsaturated oils (mustard, groundnut, sunflower, olive) and rotate oils.; Add fibre: oats, whole pulses, vegetables, fruit."
+diet,d_weight,Healthy gradual weight management,overweight,,,,safe,12,moderate,Use smaller plates and fill half of the plate with vegetables.; Eat slowly and stop when you feel comfortably full.
+diet,d_underweight,Healthy weight gain and nutrition,underweight,,,,safe,12,moderate,"Eat 3 meals and 2-3 snacks a day.; Add nutritious energy: nuts, nut butter, milk, curd, eggs, paneer, ghee in small amounts."
+diet,d_acidity,Easing acidity and heartburn,acidity|digestion,,,,safe,12,moderate,"Eat smaller, more frequent meals.; Finish dinner at least 2-3 hours before lying down."
+diet,d_constipation,Easing constipation,constipation|digestion,,,,safe,12,moderate,"Increase fibre slowly: vegetables, fruit with skin, whole grains, pulses.; Drink enough water through the day."
+diet,d_cold_cough,Soothing a mild cold or cough,cold_cough|sore_throat,,,,safe,2,moderate,"Rest and drink warm fluids often (warm water, soups, ginger-tulsi tea).; Gargle with warm salt water for a sore throat."
+diet,d_diarrhoea,Mild loose motions: stay hydrated,mild_diarrhea,,,,safe,0,strong,"Take oral rehydration solution (ORS) in small, frequent sips.; Keep eating light foods: rice, banana, curd, khichdi."
+diet,d_pregnancy,Eating well in pregnancy,pregnancy,,,,safe,14,strong,"Eat regular, balanced meals with extra protein: dal, milk, curd, eggs, paneer, legumes.; Include iron- and folate-rich foods: leafy greens, beans, jaggery in small amounts, fruit."
+diet,d_postpartum,Recovery after childbirth,postpartum,,,,safe,14,moderate,"Eat balanced meals with protein, iron, calcium and fibre.; Drink plenty of fluids, especially if breastfeeding."
+diet,d_elderly,Nutrition for older adults,elderly,,,,safe,60,moderate,"Eat small, frequent, nutritious meals.; Include enough protein (dal, milk, curd, eggs, fish, paneer)."
+diet,d_child,Healthy eating for children,child,,,,safe,0,strong,"Breastfeed exclusively for the first 6 months, then continue with safe, age-appropriate complementary foods.; Offer a variety of foods: dal, vegetables, fruit, milk, eggs and grains."
+diet,d_hydration_heat,Staying hydrated in hot weather,general|elderly|child,,,,safe,0,strong,"Drink water regularly through the day, before you feel thirsty.; Take ORS, lemon water with a pinch of salt and sugar, buttermilk or coconut water in heat."
+lifestyle,l_sleep,Good sleep habits,sleep|stress|hypertension|general,,,,,5,strong,"Poor sleep is linked with higher blood pressure, blood sugar and stress."
+lifestyle,l_stress,Managing stress,stress|hypertension|heart_risk|sleep,,,,,10,moderate,"Long-term stress affects sleep, blood pressure and mood."
+lifestyle,l_home_bp,Checking blood pressure at home,hypertension|heart_risk,,,,,18,strong,Home readings help your doctor decide on treatment.
+lifestyle,l_tobacco_alcohol,Stop tobacco and cut down alcohol,hypertension|heart_risk|general,,,,,15,strong,"Tobacco and alcohol raise the risk of heart disease, stroke and cancer."
+lifestyle,l_diabetes_foot,Looking after your feet,high_glucose,,,,,18,strong,High blood sugar can reduce feeling in the feet so small injuries go unnoticed.
+lifestyle,l_checkups,Regular health check-ups,general|hypertension|high_glucose|heart_risk,,,,,18,strong,Early detection makes treatment easier.
+lifestyle,l_posture,Healthy posture and screen use,desk_work|back_pain|headache_tension,,,,,8,moderate,"Poor posture and long sitting contribute to neck, back and eye strain."
+lifestyle,l_hygiene,Hand hygiene and infection prevention,cold_cough|sore_throat|mild_diarrhea|general|child,,,,,2,strong,Handwashing reduces many infections including diarrhoea and respiratory illness.
+lifestyle,l_sun_vitd,Safe sunlight,elderly|general|postpartum|pregnancy,,,,,1,moderate,Sunlight helps the body make vitamin D for bones and muscles.
+lifestyle,l_heat_safety,Heat safety,general|elderly|child|pregnancy,,,,,0,strong,Heat illness can become serious quickly.
+lifestyle,l_mental_health,Mental well-being,stress|sleep|general|postpartum,,,,,12,moderate,"Mental health is part of overall health, and help is available."
+lifestyle,l_pregnancy_care,Antenatal care essentials,pregnancy,,,,,14,strong,Regular care and knowing danger signs save lives of mothers and babies.
+lifestyle,l_fall_prevention,Preventing falls at home,elderly,,,,,60,strong,Falls are a major cause of injury in older adults.
+lifestyle,l_weight_tracking,Tracking weight and waist,overweight|high_glucose|heart_risk,,,,,18,moderate,Tracking helps you see progress and stay motivated.
+lifestyle,l_underweight_care,If you are underweight,underweight,,,,,12,moderate,A low BMI can be linked to poor nutrition or illness.
+home_care,h_cold,Common cold or runny nose,cold_cough,,,,,,,Rest and drink plenty of warm fluids.; Salt-water gargles may soothe the throat.
+home_care,h_cough,Mild cough,cold_cough,,,,,,,Warm fluids; honey in warm water for adults and children over 1 year.; Rest and avoid smoke.
+home_care,h_sore_throat,Mild sore throat,sore_throat,,,,,,,Warm salt-water gargles several times a day.; Warm fluids and rest.
+home_care,h_headache,Mild tension headache,headache_tension,,,,,,,"Drink water, rest in a quiet place and relax the neck and shoulders.; Take a short walk or do gentle neck stretches."
+home_care,h_acidity,Acidity or heartburn,acidity|digestion,,,,,,,"Eat smaller meals and avoid lying down for 2-3 hours after eating.; Cut back on spicy, oily food and strong tea or coffee."
+home_care,h_constipation,Constipation,constipation,,,,,,,"More fibre (vegetables, fruit, whole grains) and water.; Walk daily and go to the toilet at a regular time."
+home_care,h_muscle,Muscle ache after activity,muscle_ache|back_pain,,,,,,,"Rest the area for a day, then resume gentle movement.; Warm compress or a warm bath for stiffness; a cold pack for a fresh swelling."
+home_care,h_minor_wound,Small scratch or minor cut,skin_minor,,,,,,,"Wash hands, then rinse the wound under clean running water and wash gently with soap.; Press with a clean cloth to stop bleeding."
+home_care,h_insect_bite,Insect bite or itchy bump,skin_minor,,,,,,,Wash with soap and water; apply a cold cloth.; Avoid scratching to prevent infection.
+home_care,h_fatigue,Feeling tired after poor sleep,sleep|stress,,,,,,,Keep a regular sleep schedule and aim for 7-9 hours.; Get daylight and light activity during the day.
+home_care,h_loose_motions,Mild loose motions,mild_diarrhea,,,,,,,"Take ORS in small, frequent sips.; Continue light food such as rice, banana, curd and khichdi."

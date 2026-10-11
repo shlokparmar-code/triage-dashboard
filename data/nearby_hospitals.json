@@ -1,0 +1,360 @@
+{
+  "meta": {
+    "demo_data": true,
+    "warning": "DEMO DIRECTORY. Hospital names and phone numbers below are placeholders for the prototype. Replace them with verified local hospitals and their real phone numbers before any real use. Phone numbers must be re-checked regularly.",
+    "emergency_level_values": {
+      "advanced": "24x7 emergency with specialists",
+      "basic": "basic emergency / stabilisation",
+      "none": "no emergency service"
+    },
+    "registry_id": "Optional. Matches a hospital_id in the app registry so queue length can be read from the live queue."
+  },
+  "national_helplines": [
+    {
+      "name": "National Emergency Number",
+      "number": "112"
+    },
+    {
+      "name": "Ambulance",
+      "number": "108"
+    },
+    {
+      "name": "Women Helpline",
+      "number": "1091"
+    }
+  ],
+  "cities": [
+    {
+      "name": "Jaipur",
+      "state": "Rajasthan",
+      "lat": 26.9124,
+      "lon": 75.7873
+    },
+    {
+      "name": "Alwar",
+      "state": "Rajasthan",
+      "lat": 27.553,
+      "lon": 76.6346
+    },
+    {
+      "name": "Bangalore",
+      "state": "Karnataka",
+      "lat": 12.9716,
+      "lon": 77.5946
+    },
+    {
+      "name": "Delhi",
+      "state": "Delhi",
+      "lat": 28.6139,
+      "lon": 77.209
+    },
+    {
+      "name": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 19.076,
+      "lon": 72.8777
+    },
+    {
+      "name": "Chennai",
+      "state": "Tamil Nadu",
+      "lat": 13.0827,
+      "lon": 80.2707
+    }
+  ],
+  "hospitals": [
+    {
+      "name": "Apex District Hospital",
+      "city": "Jaipur",
+      "state": "Rajasthan",
+      "type": "District Hospital",
+      "emergency_level": "advanced",
+      "registry_id": "HOSP-001",
+      "phone": "+91-00000-10001",
+      "ambulance": "108",
+      "lat": 26.9124,
+      "lon": 75.7873,
+      "specialties": [
+        "Emergency",
+        "General Medicine",
+        "Surgery",
+        "Maternity"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Lakeview Emergency Care",
+      "city": "Jaipur",
+      "state": "Rajasthan",
+      "type": "Private Hospital",
+      "emergency_level": "advanced",
+      "registry_id": null,
+      "phone": "+91-00000-10002",
+      "ambulance": "108",
+      "lat": 26.9124,
+      "lon": 75.7873,
+      "specialties": [
+        "Emergency",
+        "Cardiology",
+        "Trauma"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Harmony Women & Child Hospital",
+      "city": "Jaipur",
+      "state": "Rajasthan",
+      "type": "Women & Child Hospital",
+      "emergency_level": "basic",
+      "registry_id": null,
+      "phone": "+91-00000-10003",
+      "ambulance": "108",
+      "lat": 26.9124,
+      "lon": 75.7873,
+      "specialties": [
+        "Maternity",
+        "Paediatrics"
+      ],
+      "demo": true,
+      "note": "Best for pregnancy and child emergencies"
+    },
+    {
+      "name": "Alwar Community Health Centre",
+      "city": "Alwar",
+      "state": "Rajasthan",
+      "type": "Community Health Centre",
+      "emergency_level": "basic",
+      "registry_id": "HOSP-002",
+      "phone": "+91-00000-10004",
+      "ambulance": "108",
+      "lat": 27.553,
+      "lon": 76.6346,
+      "specialties": [
+        "General Medicine",
+        "Maternity"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Riverside General Hospital",
+      "city": "Alwar",
+      "state": "Rajasthan",
+      "type": "General Hospital",
+      "emergency_level": "advanced",
+      "registry_id": null,
+      "phone": "+91-00000-10005",
+      "ambulance": "108",
+      "lat": 27.553,
+      "lon": 76.6346,
+      "specialties": [
+        "Emergency",
+        "General Medicine",
+        "Surgery"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "St. Jude Rural Clinic",
+      "city": "Bangalore",
+      "state": "Karnataka",
+      "type": "Clinic",
+      "emergency_level": "none",
+      "registry_id": "HOSP-003",
+      "phone": "+91-00000-10006",
+      "ambulance": "108",
+      "lat": 12.9716,
+      "lon": 77.5946,
+      "specialties": [
+        "General Practice"
+      ],
+      "demo": true,
+      "note": "Clinic only, not for emergencies"
+    },
+    {
+      "name": "Greenfield Community Health Centre",
+      "city": "Bangalore",
+      "state": "Karnataka",
+      "type": "Community Health Centre",
+      "emergency_level": "basic",
+      "registry_id": null,
+      "phone": "+91-00000-10007",
+      "ambulance": "108",
+      "lat": 12.9716,
+      "lon": 77.5946,
+      "specialties": [
+        "General Medicine",
+        "Maternity"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Southpoint Multispecialty Hospital",
+      "city": "Bangalore",
+      "state": "Karnataka",
+      "type": "Private Hospital",
+      "emergency_level": "advanced",
+      "registry_id": null,
+      "phone": "+91-00000-10008",
+      "ambulance": "108",
+      "lat": 12.9716,
+      "lon": 77.5946,
+      "specialties": [
+        "Emergency",
+        "Cardiology",
+        "Neurology"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Metro General Hospital",
+      "city": "Delhi",
+      "state": "Delhi",
+      "type": "General Hospital",
+      "emergency_level": "advanced",
+      "registry_id": "HOSP-004",
+      "phone": "+91-00000-10009",
+      "ambulance": "108",
+      "lat": 28.6139,
+      "lon": 77.209,
+      "specialties": [
+        "Emergency",
+        "General Medicine",
+        "Cardiology"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Northgate Trauma Centre",
+      "city": "Delhi",
+      "state": "Delhi",
+      "type": "Trauma Centre",
+      "emergency_level": "advanced",
+      "registry_id": null,
+      "phone": "+91-00000-10010",
+      "ambulance": "108",
+      "lat": 28.6139,
+      "lon": 77.209,
+      "specialties": [
+        "Trauma",
+        "Emergency",
+        "Surgery"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Sunbeam Primary Health Centre",
+      "city": "Delhi",
+      "state": "Delhi",
+      "type": "Primary Health Centre",
+      "emergency_level": "none",
+      "registry_id": null,
+      "phone": "+91-00000-10011",
+      "ambulance": "108",
+      "lat": 28.6139,
+      "lon": 77.209,
+      "specialties": [
+        "General Practice"
+      ],
+      "demo": true,
+      "note": "Primary care only"
+    },
+    {
+      "name": "Harbour City Hospital",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "type": "General Hospital",
+      "emergency_level": "advanced",
+      "registry_id": null,
+      "phone": "+91-00000-10012",
+      "ambulance": "108",
+      "lat": 19.076,
+      "lon": 72.8777,
+      "specialties": [
+        "Emergency",
+        "General Medicine",
+        "Surgery"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Seaview Community Health Centre",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "type": "Community Health Centre",
+      "emergency_level": "basic",
+      "registry_id": null,
+      "phone": "+91-00000-10013",
+      "ambulance": "108",
+      "lat": 19.076,
+      "lon": 72.8777,
+      "specialties": [
+        "General Medicine"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Marina District Hospital",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "type": "District Hospital",
+      "emergency_level": "advanced",
+      "registry_id": null,
+      "phone": "+91-00000-10014",
+      "ambulance": "108",
+      "lat": 13.0827,
+      "lon": 80.2707,
+      "specialties": [
+        "Emergency",
+        "General Medicine",
+        "Surgery"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Palm Grove Emergency Hospital",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "type": "Private Hospital",
+      "emergency_level": "advanced",
+      "registry_id": null,
+      "phone": "+91-00000-10015",
+      "ambulance": "108",
+      "lat": 13.0827,
+      "lon": 80.2707,
+      "specialties": [
+        "Emergency",
+        "Cardiology",
+        "Trauma"
+      ],
+      "demo": true,
+      "note": ""
+    },
+    {
+      "name": "Southside Primary Health Centre",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "type": "Primary Health Centre",
+      "emergency_level": "none",
+      "registry_id": null,
+      "phone": "+91-00000-10016",
+      "ambulance": "108",
+      "lat": 13.0827,
+      "lon": 80.2707,
+      "specialties": [
+        "General Practice"
+      ],
+      "demo": true,
+      "note": "Primary care only"
+    }
+  ]
+}

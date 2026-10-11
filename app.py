@@ -31,13 +31,20 @@ from dashboard.mode import (
     is_hospital,
     render_mode_selector,
 )
+from dashboard.home_support import (
+    collect_concerns,
+    render_contact_alert,
+    render_nearby_hospitals,
+    render_wellness_plan,
+)
 from dashboard.override import override_summary, render_clinician_override
 from dashboard.pdf_export import generate_home_pdf, generate_triage_pdf
-from dashboard.pdf_simple import text_to_pdf
+from dashboard.pdf_simple import history_report_pdf, text_to_pdf
 from dashboard.queue import add_to_queue, render_queue_ui
 from dashboard.styles import CUSTOM_CSS
 from modules.fusion.engine import fuse_triage_modalities
 from modules.fusion.handoff import generate_handoff, load_referral_levels
+from modules import contact_alert, facilities, reference_ranges, wellness
 from modules.registry import (
     LocalRegistryProvider,
     authenticate_doctor,
@@ -187,16 +194,23 @@ if "patient_age_months" not in st.session_state:
     st.session_state["patient_age_months"] = 336
 if "patient_sex" not in st.session_state:
     st.session_state["patient_sex"] = "Female"
-if "patient_bp" not in st.session_state:
-    st.session_state["patient_bp"] = 118
-if "patient_bp_dia" not in st.session_state:
-    st.session_state["patient_bp_dia"] = 78
-if "patient_chol" not in st.session_state:
-    st.session_state["patient_chol"] = 185
-if "patient_glucose" not in st.session_state:
-    st.session_state["patient_glucose"] = 92
-if "patient_bmi" not in st.session_state:
-    st.session_state["patient_bmi"] = 22.4
+# Vitals + chronic baseline start at STANDARD adult reference values
+# (see modules/reference_ranges.py for the values and their sources).
+for _key, _val in reference_ranges.session_defaults().items():
+    if _key not in st.session_state:
+        st.session_state[_key] = _val
+# Version counter baked into the vitals/baseline widget keys. Bumping it forces
+# Streamlit to rebuild those boxes from session_state (used by Reset + presets).
+if "_std_ver" not in st.session_state:
+    st.session_state["_std_ver"] = 0
+
+
+def _reset_standard_values():
+    """Button callback: put every vital / baseline box back to the standard value."""
+    reference_ranges.reset_to_standard(st.session_state)
+    st.session_state["vitals_anomaly_type"] = "none"
+    st.session_state["_std_ver"] += 1
+
 
 # Maternal & Pediatric states
 if "is_pregnant" not in st.session_state:
@@ -212,15 +226,8 @@ if "child_danger_signs" not in st.session_state:
 if "vitals_anomaly_type" not in st.session_state:
     st.session_state["vitals_anomaly_type"] = "none"
 
-# Manual vitals for Home mode
-if "manual_hr" not in st.session_state:
-    st.session_state["manual_hr"] = 74
-if "manual_spo2" not in st.session_state:
-    st.session_state["manual_spo2"] = 98.0
-if "manual_temp" not in st.session_state:
-    st.session_state["manual_temp"] = 36.8
-if "manual_rr" not in st.session_state:
-    st.session_state["manual_rr"] = 16
+# (Manual Home-mode vitals manual_hr / manual_spo2 / manual_temp / manual_rr
+#  are initialised above from reference_ranges.session_defaults().)
 
 # Active Clinician context in Hospital mode
 if "current_hospital_id" not in st.session_state:
@@ -283,6 +290,7 @@ if not st.session_state["mode_chosen"]:
 # ==========================================
 def load_benchmark_patient(preset_key: str):
     """Load benchmark patient scenarios covering adult, pediatric, maternal, and multi-hospital flows."""
+    st.session_state["_std_ver"] = st.session_state.get("_std_ver", 0) + 1  # refresh vitals/baseline boxes
     if preset_key == "ADULT_LOW":
         st.session_state["patient_name"] = "Aarav Sharma"
         st.session_state["patient_country_code"] = "+91"
@@ -562,6 +570,71 @@ if st.sidebar.button("🔍 Search Patient History", use_container_width=True):
 
 st.sidebar.markdown("---")
 
+# ------------------------------------------
+# HOME MODE: nearby hospitals + emergency contact
+# ------------------------------------------
+home_city = None
+sec_full, sec_valid, sec_relation, share_consent = "", False, "", False
+
+if is_home():
+    st.sidebar.subheader("📍 Your Location")
+    _cities = facilities.list_cities()
+    st.session_state.setdefault("home_city", _cities[0] if _cities else "")
+    if _cities:
+        _ci = _cities.index(st.session_state["home_city"]) if st.session_state["home_city"] in _cities else 0
+        home_city = st.sidebar.selectbox(
+            "Nearest city (to suggest hospitals):", _cities, index=_ci, key="_home_city_select",
+        )
+        st.session_state["home_city"] = home_city
+
+    st.sidebar.subheader("👥 Emergency Contact")
+    st.sidebar.caption("A friend, guardian or relative who should know about your result.")
+    st.session_state.setdefault("sec_relation", contact_alert.RELATIONS[0])
+    st.session_state.setdefault("sec_country_code", "+91")
+    st.session_state.setdefault("sec_mobile_raw", "")
+    st.session_state.setdefault("share_consent", False)
+
+    _ri = contact_alert.RELATIONS.index(st.session_state["sec_relation"]) if st.session_state["sec_relation"] in contact_alert.RELATIONS else 0
+    sec_relation = st.sidebar.selectbox("Who is this person?", contact_alert.RELATIONS, index=_ri, key="_sec_relation_select")
+    st.session_state["sec_relation"] = sec_relation
+
+    _sc1, _sc2 = st.sidebar.columns([1.2, 2.0])
+    with _sc1:
+        _codes = list(config.COUNTRY_PHONE_CONFIG.keys())
+        _cidx = _codes.index(st.session_state["sec_country_code"]) if st.session_state["sec_country_code"] in _codes else 0
+        sec_code = st.selectbox("Code:", _codes, index=_cidx, key="_sec_cc_select")
+        st.session_state["sec_country_code"] = sec_code
+    with _sc2:
+        sec_num = st.text_input("Contact's Mobile:", value=st.session_state["sec_mobile_raw"], key="_sec_mobile_input")
+        st.session_state["sec_mobile_raw"] = sec_num
+
+    if sec_num.strip():
+        sec_valid, sec_full, _sec_err = contact_alert.validate_secondary(sec_code, sec_num, full_phone if is_valid_phone else "")
+        if sec_valid:
+            st.sidebar.caption(f"Contact: `{contact_alert.mask_number(sec_full)}`")
+        else:
+            st.sidebar.warning(f"⚠️ {_sec_err}")
+
+    share_consent = st.sidebar.checkbox(
+        "I agree to share my result (urgency level and main concerns) with this contact.",
+        value=st.session_state["share_consent"],
+        key="_share_consent_checkbox",
+    )
+    st.session_state["share_consent"] = share_consent
+    st.sidebar.markdown("---")
+
+# Physical limits used to hide unsuitable exercises/yoga (both modes)
+st.session_state.setdefault("wellness_limits", [])
+wellness_limits = st.sidebar.multiselect(
+    "Any of these? (hides unsuitable exercises)",
+    options=list(wellness.LIMIT_OPTIONS.keys()),
+    default=[x for x in st.session_state["wellness_limits"] if x in wellness.LIMIT_OPTIONS],
+    format_func=lambda k: wellness.LIMIT_OPTIONS[k],
+    key="_wellness_limits_select",
+)
+st.session_state["wellness_limits"] = wellness_limits
+st.sidebar.markdown("---")
+
 
 # ==========================================
 # CLINICAL INPUT SECTIONS
@@ -679,16 +752,32 @@ if is_home():
     st.sidebar.caption("Enter measurements from home thermometer, pulse oximeter, or BP cuff:")
     m_v1, m_v2 = st.sidebar.columns(2)
     with m_v1:
-        v_hr = st.number_input("Pulse / HR (bpm)", min_value=30, max_value=220, value=int(st.session_state["manual_hr"]))
-        v_temp = st.number_input("Temp (°C)", min_value=33.0, max_value=43.0, value=float(st.session_state["manual_temp"]), step=0.1)
+        v_hr = st.number_input("Pulse / HR (bpm)", min_value=30, max_value=220, value=int(st.session_state["manual_hr"]), key=f"w_manual_hr_{st.session_state['_std_ver']}",
+                               help=reference_ranges.range_text("heart_rate"))
+        v_temp = st.number_input("Temp (°C)", min_value=33.0, max_value=43.0, value=float(st.session_state["manual_temp"]), step=0.1, key=f"w_manual_temp_{st.session_state['_std_ver']}",
+                                 help=reference_ranges.range_text("temperature"))
     with m_v2:
-        v_spo2 = st.number_input("SpO2 Oxygen (%)", min_value=60.0, max_value=100.0, value=float(st.session_state["manual_spo2"]), step=0.5)
-        v_rr = st.number_input("Breaths / min", min_value=8, max_value=80, value=int(st.session_state["manual_rr"]))
+        v_spo2 = st.number_input("SpO2 Oxygen (%)", min_value=60.0, max_value=100.0, value=float(st.session_state["manual_spo2"]), step=0.5, key=f"w_manual_spo2_{st.session_state['_std_ver']}",
+                                 help=reference_ranges.range_text("spo2"))
+        v_rr = st.number_input("Breaths / min", min_value=8, max_value=80, value=int(st.session_state["manual_rr"]), key=f"w_manual_rr_{st.session_state['_std_ver']}",
+                               help=reference_ranges.range_text("resp_rate"))
 
     st.session_state["manual_hr"] = v_hr
     st.session_state["manual_spo2"] = v_spo2
     st.session_state["manual_temp"] = v_temp
     st.session_state["manual_rr"] = v_rr
+
+    # Compare with the standard adult ranges (adults only; children use pediatric tables)
+    if p_age >= 18:
+        _vit_off = reference_ranges.outside_range(
+            {"heart_rate": v_hr, "spo2": v_spo2, "temperature": v_temp, "resp_rate": v_rr}
+        )
+        if _vit_off:
+            st.sidebar.caption("⚠️ Outside the standard adult range:\n" + reference_ranges.format_outside(_vit_off))
+        else:
+            st.sidebar.caption("✅ All vitals are within the standard adult range.")
+    else:
+        st.sidebar.caption("ℹ️ Adult reference ranges do not apply to under-18 patients; pediatric ranges are used by the safety rules.")
 
     # Generate synthetic telemetry from home inputs
     vitals_df = pd.DataFrame({
@@ -706,24 +795,22 @@ else:
     model_type_key = "isolation_forest" if "Isolation" in vitals_model_choice else "autoencoder"
 
     if vitals_source == "Simulate Telemetry Stream":
+        _anomaly_options = [
+            ("none", "Normal Resting Baseline"),
+            ("hypoxia", "Acute Hypoxia (SpO2 < 90%)"),
+            ("tachycardia", "Severe Tachycardia (HR > 140)"),
+            ("bradycardia", "Severe Bradycardia (HR < 40)"),
+            ("septic_fever", "Septic Fever Spike + Tachypnea"),
+            ("combined_critical", "Critical Hypoxia + Tachycardia"),
+        ]
+        _anomaly_ids = [o[0] for o in _anomaly_options]
         anomaly_choice = st.sidebar.selectbox(
             "Inject Physiological Pattern:",
-            [
-                ("none", "Normal Resting Baseline"),
-                ("hypoxia", "Acute Hypoxia (SpO2 < 90%)"),
-                ("tachycardia", "Severe Tachycardia (HR > 140)"),
-                ("bradycardia", "Severe Bradycardia (HR < 40)"),
-                ("septic_fever", "Septic Fever Spike + Tachypnea"),
-                ("combined_critical", "Critical Hypoxia + Tachycardia"),
-            ],
-            index=0 if st.session_state["vitals_anomaly_type"] == "none" else (
-                1 if st.session_state["vitals_anomaly_type"] == "hypoxia" else (
-                    2 if st.session_state["vitals_anomaly_type"] == "tachycardia" else (
-                        4 if st.session_state["vitals_anomaly_type"] == "septic_fever" else 5
-                    )
-                )
-            ),
+            _anomaly_options,
+            index=_anomaly_ids.index(st.session_state["vitals_anomaly_type"])
+            if st.session_state["vitals_anomaly_type"] in _anomaly_ids else 0,
             format_func=lambda x: x[1],
+            key=f"w_anomaly_{st.session_state['_std_ver']}",
         )[0]
         st.session_state["vitals_anomaly_type"] = anomaly_choice
 
@@ -749,18 +836,52 @@ st.sidebar.markdown("---")
 st.sidebar.subheader("4. Chronic Risk Baseline")
 c_b1, c_b2 = st.sidebar.columns(2)
 with c_b1:
-    p_bp = st.number_input("Resting BP Sys (mmHg)", min_value=70, max_value=240, value=int(st.session_state["patient_bp"]))
-    p_bp_dia = st.number_input("Resting BP Dia (mmHg)", min_value=40, max_value=140, value=int(st.session_state["patient_bp_dia"]))
-    p_chol = st.number_input("Cholesterol (mg/dL)", min_value=100, max_value=480, value=int(st.session_state["patient_chol"]))
+    p_bp = st.number_input("Resting BP Sys (mmHg)", min_value=70, max_value=240, value=int(st.session_state["patient_bp"]), key=f"w_patient_bp_{st.session_state['_std_ver']}",
+                           help=reference_ranges.range_text("bp_systolic"))
+    p_bp_dia = st.number_input("Resting BP Dia (mmHg)", min_value=40, max_value=140, value=int(st.session_state["patient_bp_dia"]), key=f"w_patient_bp_dia_{st.session_state['_std_ver']}",
+                               help=reference_ranges.range_text("bp_diastolic"))
+    p_chol = st.number_input("Cholesterol (mg/dL)", min_value=100, max_value=480, value=int(st.session_state["patient_chol"]), key=f"w_patient_chol_{st.session_state['_std_ver']}",
+                             help=reference_ranges.range_text("cholesterol"))
 with c_b2:
-    p_glucose = st.number_input("Blood Glucose (mg/dL)", min_value=50, max_value=400, value=int(st.session_state["patient_glucose"]))
-    p_bmi = st.number_input("BMI", min_value=12.0, max_value=55.0, value=float(st.session_state["patient_bmi"]), step=0.1)
+    p_glucose = st.number_input("Blood Glucose (mg/dL)", min_value=50, max_value=400, value=int(st.session_state["patient_glucose"]), key=f"w_patient_glucose_{st.session_state['_std_ver']}",
+                                help=reference_ranges.range_text("glucose"))
+    p_bmi = st.number_input("BMI", min_value=12.0, max_value=55.0, value=float(st.session_state["patient_bmi"]), step=0.1, key=f"w_patient_bmi_{st.session_state['_std_ver']}",
+                            help=reference_ranges.range_text("bmi"))
 
 st.session_state["patient_bp"] = p_bp
 st.session_state["patient_bp_dia"] = p_bp_dia
 st.session_state["patient_chol"] = p_chol
 st.session_state["patient_glucose"] = p_glucose
 st.session_state["patient_bmi"] = p_bmi
+
+# Compare with the standard adult ranges (adults only)
+if p_age >= 18:
+    _base_off = reference_ranges.outside_range({
+        "bp_systolic": p_bp, "bp_diastolic": p_bp_dia, "cholesterol": p_chol,
+        "glucose": p_glucose, "bmi": p_bmi,
+    })
+    if _base_off:
+        st.sidebar.caption("⚠️ Outside the standard adult range:\n" + reference_ranges.format_outside(_base_off))
+    else:
+        st.sidebar.caption("✅ All baseline values are within the standard adult range.")
+
+st.sidebar.button(
+    "↺ Reset to standard values",
+    key="btn_reset_standard",
+    on_click=_reset_standard_values,
+    disabled=(p_age < 18),
+    use_container_width=True,
+    help="Puts every vital-sign and baseline box back to the standard adult reference value. "
+         "(Disabled for under-18 patients - children have different normal ranges.)",
+)
+
+with st.sidebar.expander("ℹ️ Where do the standard values come from?"):
+    st.markdown(
+        "Boxes open pre-filled with typical **normal adult resting values**. "
+        "Hover the **?** next to any box to see its normal range.\n\n"
+        + "\n".join(f"- [{name}]({url})" for name, url in reference_ranges.SOURCES)
+        + "\n\n*Reference ranges for screening and education only - not a diagnosis.*"
+    )
 
 if p_age < 18:
     st.sidebar.caption("ℹ️ *Chronic disease models are adult-only and automatically excluded for under-18 patients.*")
@@ -1101,6 +1222,19 @@ with tab_assessment:
             telemetry_fig = plot_vitals_telemetry(vitals_df, vitals_res["details"].get("anomaly_indices"))
             st.pyplot(telemetry_fig, use_container_width=True)
 
+    # 3b. Home-only: nearby hospitals (with busy-hospital redirect) and contact alert
+    if is_home():
+        render_nearby_hospitals(effective_urgency, home_city)
+        render_contact_alert(
+            patient_name=st.session_state["patient_name"],
+            urgency=effective_urgency,
+            concerns=collect_concerns(special_pop_res, symptom_res, st.session_state["symptom_text"]),
+            contact_full=sec_full,
+            contact_valid=sec_valid,
+            share_consent=share_consent,
+            relation=sec_relation,
+        )
+
     # 4. Actionable Lifestyle, Diet & Supportive Care (Common to both)
     st.markdown("### 🌿 Supportive Wellness & Care Guidance")
     recs = fusion_res["recommendations"]
@@ -1135,6 +1269,28 @@ with tab_assessment:
             if recs.get("exercise_plan"):
                 st.markdown("#### 🏃 Physical Activity Guidance")
                 st.info(recs.get("exercise_plan"))
+
+    # 4b. Detailed personalised wellness plan (not shown for HIGH urgency)
+    def _num(x):
+        return float(x) if isinstance(x, (int, float)) else None
+
+    render_wellness_plan(
+        wellness.build_plan(
+            age=int(p_age),
+            urgency=effective_urgency,
+            sex=p_sex,
+            systolic_bp=p_bp,
+            diastolic_bp=p_bp_dia,
+            glucose=p_glucose,
+            bmi=p_bmi,
+            is_pregnant=st.session_state.get("is_pregnant", False),
+            is_postpartum=st.session_state.get("is_postpartum", False),
+            heart_risk=_num(risk_res.get("details", {}).get("heart_disease_risk")),
+            diabetes_risk=_num(risk_res.get("details", {}).get("diabetes_risk")),
+            symptom_text=st.session_state["symptom_text"],
+            limits=wellness_limits,
+        )
+    )
 
     # 5. Dual Mode PDF Report Download
     st.markdown("---")
@@ -1318,13 +1474,12 @@ if tab_registry is not None:
             st.markdown("---")
             col_f1, col_f2 = st.columns(2)
             with col_f1:
-                fhir_bundle = registry.export_fhir_json(p_id)
                 st.download_button(
                     "📥 Export Patient History (PDF)",
-                    data=text_to_pdf(
-                        f"Patient History Summary - {p_id}",
-                        json.dumps(fhir_bundle, indent=2),
-                        subtitle="FHIR R4-style record, masked identifiers",
+                    data=history_report_pdf(
+                        {**dict(target_pat), "patient_id": p_id},
+                        history,
+                        det_msg if is_worse else None,
                     ),
                     file_name=f"patient_history_{p_id}_{datetime.now().strftime('%Y%m%d')}.pdf",
                     mime="application/pdf",
